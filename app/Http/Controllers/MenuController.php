@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MenuItem;
+
 class MenuController extends Controller
 {
     /* TODO: complete getMenuItems so that it returns a nested menu structure from the database
@@ -90,6 +92,24 @@ class MenuController extends Controller
 
     public function getMenuItems()
     {
-        throw new \Exception('Implement task#3');
+        $rows = MenuItem::all()->toArray();
+
+        $items = [];
+        foreach ($rows as $row) {
+            $row['children'] = [];
+            $items[$row['id']] = $row;
+        }
+
+        foreach ($items as $id => $item) {
+            if ($item['parent_id'] !== null) {
+                $items[$item['parent_id']]['children'][] = &$items[$id];
+            }
+        }
+
+        return array_values(
+            array_filter($items, fn ($item) => $item['parent_id'] === null)
+        );
     }
+
 }
+

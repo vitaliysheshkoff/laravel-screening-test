@@ -98,7 +98,7 @@ class EventController extends Controller
 
     public function getEventsWithWorkshops()
     {
-        throw new \Exception('Implement task#1');
+        return Event::with('workshops')->get();
     }
 
     /* TODO: complete getFutureEventWithWorkshops so that it returns events with workshops, that have not yet started
@@ -176,6 +176,13 @@ class EventController extends Controller
 
     public function getFutureEventsWithWorkshops()
     {
-        throw new \Exception('Implement task#2');
+        $futureEventIds = \DB::table('workshops')
+            ->select('event_id')
+            ->groupBy('event_id')
+            ->havingRaw("MIN(start) > datetime('now')");
+
+        return Event::with('workshops')
+            ->whereIn('id', $futureEventIds)
+            ->get();
     }
 }

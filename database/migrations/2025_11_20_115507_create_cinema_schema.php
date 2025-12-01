@@ -1,9 +1,9 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /*
     ToDo: Create a migration that creates all tables for the following user stories
 
@@ -39,7 +39,53 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Implement task#4
+        Schema::create('movies', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->integer('duration_minutes');
+            $table->timestamps();
+        });
+
+        Schema::create('showrooms', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        Schema::create('seat_types', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->decimal('price_multiplier', 5);
+            $table->timestamps();
+        });
+
+        Schema::create('seats', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('showroom_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('seat_type_id')->constrained()->cascadeOnDelete();
+            $table->string('row');
+            $table->integer('number');
+            $table->timestamps();
+        });
+
+        Schema::create('shows', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('movie_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('showroom_id')->constrained()->cascadeOnDelete();
+            $table->dateTime('starts_at');
+            $table->decimal('base_price');
+            $table->timestamps();
+        });
+
+        Schema::create('bookings', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('show_id')->constrained('shows')->cascadeOnDelete();
+            $table->foreignId('seat_id')->constrained('seats')->cascadeOnDelete();
+            $table->decimal('price_paid');
+            $table->timestamps();
+
+            $table->unique(['show_id', 'seat_id']);
+        });
     }
 
     /**
@@ -47,6 +93,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('bookings');
+        Schema::dropIfExists('shows');
+        Schema::dropIfExists('seats');
+        Schema::dropIfExists('seat_types');
+        Schema::dropIfExists('showrooms');
+        Schema::dropIfExists('movies');
     }
 };
